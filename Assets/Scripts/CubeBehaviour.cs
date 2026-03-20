@@ -1,27 +1,48 @@
+using System.Collections;
 using UnityEngine;
 
+[RequireComponent(typeof(Renderer))]
 public class CubeBehaviour : MonoBehaviour
 {
-    private bool hasTouchedPlatform = false;
-    private CubePool pool;
-    private Material originalMaterial;
-    public Color touchedColor = Color.green;
+    [SerializeField] private Color touchedColor = Color.green;
+    [SerializeField] private float minLifeTime = 2f;
+    [SerializeField] private float maxLifeTime = 5f;
 
-    void Start()
+    private CubePool pool;
+    private Renderer cubeRenderer;
+    private Material originalMaterial;
+    private bool hasTouchedPlatform = false;
+    private Coroutine lifeTimerCoroutine;
+
+    public event System.Action<GameObject> OnLifetimeEnded;
+
+    private void Awake()
     {
-        pool = FindFirstObjectByType<CubePool>();
-        originalMaterial = GetComponent<Renderer>().material;
+        cubeRenderer = GetComponent<Renderer>();
+        originalMaterial = cubeRenderer.material;
     }
 
-    public void ResetCube()
+    public void Init(CubePool targetPool)
+    {
+        pool = targetPool;
+        ResetCube();
+    }
+
+    private void ResetCube()
     {
         hasTouchedPlatform = false;
-        GetComponent<Renderer>().material = originalMaterial;
+        cubeRenderer.material = originalMaterial;
+
+        if (lifeTimerCoroutine != null)
+        {
+            StopCoroutine(lifeTimerCoroutine);
+            lifeTimerCoroutine = null;
+        }
     }
 
-    void OnCollisionEnter(Collision collision)
+    private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.CompareTag("Platform") && !hasTouchedPlatform)
+        if (!hasTouchedPlatform && collision.gameObject.TryGetComponent<Platform>(out _))
         {
             HandleFirstTouch();
         }
@@ -30,22 +51,15 @@ public class CubeBehaviour : MonoBehaviour
     private void HandleFirstTouch()
     {
         hasTouchedPlatform = true;
+        cubeRenderer.material.color = touchedColor;
 
-        GetComponent<Renderer>().material.color = touchedColor;
-
-        float lifeTime = Random.Range(2f, 5f);
-        Invoke(nameof(ReturnToPool), lifeTime);
+        float lifeTime = Random.Range(minLifeTime, maxLifeTime);
+        lifeTimerCoroutine = StartCoroutine(LifeTimer(lifeTime));
     }
 
-    private void ReturnToPool()
+    private IEnumerator LifeTimer(float duration)
     {
-        if (pool != null)
-        {
-            pool.ReturnCube(gameObject);
-        }
-        else
-        {
-            Destroy(gameObject);
-        }
+        yield return new WaitForSeconds(duration);
+        OnLifetimeEnded?.Invoke(gameObject);
     }
 }

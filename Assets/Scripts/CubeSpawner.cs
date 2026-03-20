@@ -1,18 +1,28 @@
+using System.Collections;
 using UnityEngine;
 
 public class CubeSpawner : MonoBehaviour
 {
-    public CubePool cubePool;
-    public float spawnInterval = 1f;
-    public Vector3 spawnAreaMin;
-    public Vector3 spawnAreaMax;
+    [SerializeField] private CubePool cubePool;
+    [SerializeField] private float spawnInterval = 1f;
+    [SerializeField] private Vector3 spawnAreaMin;
+    [SerializeField] private Vector3 spawnAreaMax;
 
-    void Start()
+    private void Start()
     {
-        InvokeRepeating(nameof(SpawnCube), 0f, spawnInterval);
+        StartCoroutine(SpawnRoutine());
     }
 
-    void SpawnCube()
+    private IEnumerator SpawnRoutine()
+    {
+        while (true)
+        {
+            SpawnCube();
+            yield return new WaitForSeconds(spawnInterval);
+        }
+    }
+
+    private void SpawnCube()
     {
         Vector3 spawnPos = new Vector3(
             Random.Range(spawnAreaMin.x, spawnAreaMax.x),
@@ -20,12 +30,31 @@ public class CubeSpawner : MonoBehaviour
             Random.Range(spawnAreaMin.z, spawnAreaMax.z)
         );
 
-        GameObject cube = cubePool.GetCube(spawnPos, Quaternion.identity);
+        GameObject cube = cubePool.GetCube();
+        cube.transform.position = spawnPos;
+        cube.transform.rotation = Quaternion.identity;
+        cube.SetActive(true);
 
         CubeBehaviour behaviour = cube.GetComponent<CubeBehaviour>();
         if (behaviour != null)
         {
-            behaviour.ResetCube();
+            behaviour.Init(cubePool);
+            behaviour.OnLifetimeEnded += HandleCubeLifetimeEnd;
         }
+        else
+        {
+            Debug.LogError("Cube prefab does not have CubeBehaviour component!", cube);
+        }
+    }
+
+    private void HandleCubeLifetimeEnd(GameObject cube)
+    {
+        CubeBehaviour behaviour = cube.GetComponent<CubeBehaviour>();
+        if (behaviour != null)
+        {
+            behaviour.OnLifetimeEnded -= HandleCubeLifetimeEnd;
+        }
+
+        cubePool.ReturnCube(cube);
     }
 }

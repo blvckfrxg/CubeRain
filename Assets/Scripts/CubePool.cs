@@ -3,12 +3,12 @@ using UnityEngine;
 
 public class CubePool : MonoBehaviour
 {
-    public GameObject cubePrefab;
-    public int poolSize = 20;
+    [SerializeField] private GameObject cubePrefab;
+    [SerializeField] private int poolSize = 20;
 
     private Queue<GameObject> pool = new Queue<GameObject>();
 
-    void Start()
+    private void Start()
     {
         for (int i = 0; i < poolSize; i++)
         {
@@ -18,7 +18,7 @@ public class CubePool : MonoBehaviour
         }
     }
 
-    public GameObject GetCube(Vector3 position, Quaternion rotation)
+    public GameObject GetCube()
     {
         if (pool.Count == 0)
         {
@@ -27,11 +27,7 @@ public class CubePool : MonoBehaviour
             pool.Enqueue(newCube);
         }
 
-        GameObject cube = pool.Dequeue();
-        cube.transform.position = position;
-        cube.transform.rotation = rotation;
-        cube.SetActive(true);
-        return cube;
+        return pool.Dequeue();
     }
 
     public void ReturnCube(GameObject cube)
