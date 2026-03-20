@@ -4,45 +4,44 @@ using UnityEngine;
 [RequireComponent(typeof(Renderer))]
 public class CubeBehaviour : MonoBehaviour
 {
-    [SerializeField] private Color touchedColor = Color.green;
-    [SerializeField] private float minLifeTime = 2f;
-    [SerializeField] private float maxLifeTime = 5f;
+    [SerializeField] private float _minLifeTime = 2f;
+    [SerializeField] private float _maxLifeTime = 5f;
 
-    private CubePool pool;
-    private Renderer cubeRenderer;
-    private Material originalMaterial;
-    private bool hasTouchedPlatform = false;
-    private Coroutine lifeTimerCoroutine;
+    private CubePool _pool;
+    private ColorChanger _colorChanger;
+    private Coroutine _lifeTimerCoroutine;
 
-    public event System.Action<GameObject> OnLifetimeEnded;
+    public event System.Action<GameObject> LifetimeEnded;
+    public event System.Action<GameObject> TouchedPlatform;
 
     private void Awake()
     {
-        cubeRenderer = GetComponent<Renderer>();
-        originalMaterial = cubeRenderer.material;
+        _colorChanger = GetComponent<ColorChanger>();
+        if (_colorChanger == null)
+            Debug.LogError("ColorChanger component missing!", this);
     }
 
     public void Init(CubePool targetPool)
     {
-        pool = targetPool;
+        _pool = targetPool;
         ResetCube();
     }
 
     private void ResetCube()
     {
-        hasTouchedPlatform = false;
-        cubeRenderer.material = originalMaterial;
+        if (_colorChanger != null)
+            _colorChanger.ResetColor();
 
-        if (lifeTimerCoroutine != null)
+        if (_lifeTimerCoroutine != null)
         {
-            StopCoroutine(lifeTimerCoroutine);
-            lifeTimerCoroutine = null;
+            StopCoroutine(_lifeTimerCoroutine);
+            _lifeTimerCoroutine = null;
         }
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (!hasTouchedPlatform && collision.gameObject.TryGetComponent<Platform>(out _))
+        if (collision.gameObject.TryGetComponent<Platform>(out _))
         {
             HandleFirstTouch();
         }
@@ -50,16 +49,18 @@ public class CubeBehaviour : MonoBehaviour
 
     private void HandleFirstTouch()
     {
-        hasTouchedPlatform = true;
-        cubeRenderer.material.color = touchedColor;
+        if (_colorChanger != null)
+            _colorChanger.ChangeColorOnFirstTouch();
 
-        float lifeTime = Random.Range(minLifeTime, maxLifeTime);
-        lifeTimerCoroutine = StartCoroutine(LifeTimer(lifeTime));
+        TouchedPlatform?.Invoke(gameObject);
+
+        float lifeTime = Random.Range(_minLifeTime, _maxLifeTime);
+        _lifeTimerCoroutine = StartCoroutine(LifeTimer(lifeTime));
     }
 
     private IEnumerator LifeTimer(float duration)
     {
         yield return new WaitForSeconds(duration);
-        OnLifetimeEnded?.Invoke(gameObject);
+        LifetimeEnded?.Invoke(gameObject);
     }
 }
