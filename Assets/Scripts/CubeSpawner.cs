@@ -39,7 +39,7 @@ public class CubeSpawner : MonoBehaviour
         if (behaviour != null)
         {
             behaviour.Init(cubePool);
-            behaviour.OnLifetimeEnded += HandleCubeLifetimeEnd;
+            behaviour.LifetimeEnded += HandleCubeLifetimeEnd;
         }
         else
         {
@@ -52,7 +52,7 @@ public class CubeSpawner : MonoBehaviour
         CubeBehaviour behaviour = cube.GetComponent<CubeBehaviour>();
         if (behaviour != null)
         {
-            behaviour.OnLifetimeEnded -= HandleCubeLifetimeEnd;
+            behaviour.LifetimeEnded -= HandleCubeLifetimeEnd;
         }
 
         cubePool.ReturnCube(cube);
