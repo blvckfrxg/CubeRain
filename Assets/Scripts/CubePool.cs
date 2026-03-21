@@ -3,36 +3,41 @@ using UnityEngine;
 
 public class CubePool : MonoBehaviour
 {
-    [SerializeField] private GameObject cubePrefab;
-    [SerializeField] private int poolSize = 20;
+    [SerializeField] private Cube _cubePrefab;
+    [SerializeField] private int _poolSize = 20;
 
-    private Queue<GameObject> pool = new Queue<GameObject>();
+    private Queue<GameObject> _pool = new Queue<GameObject>();
 
     private void Start()
     {
-        for (int i = 0; i < poolSize; i++)
+        for (int i = 0; i < _poolSize; i++)
         {
-            GameObject cube = Instantiate(cubePrefab);
+            GameObject cube = Instantiate(_cubePrefab.gameObject);
             cube.SetActive(false);
-            pool.Enqueue(cube);
+            _pool.Enqueue(cube);
         }
     }
 
     public GameObject GetCube()
     {
-        if (pool.Count == 0)
+        if (_pool.Count == 0)
         {
-            GameObject newCube = Instantiate(cubePrefab);
+            GameObject newCube = Instantiate(_cubePrefab.gameObject);
             newCube.SetActive(false);
-            pool.Enqueue(newCube);
+            _pool.Enqueue(newCube);
         }
 
-        return pool.Dequeue();
+        return _pool.Dequeue();
     }
 
     public void ReturnCube(GameObject cube)
     {
+        if (cube.TryGetComponent<Cube>(out var cubeComponent))
+        {
+            cubeComponent.ResetState();
+        }
+
         cube.SetActive(false);
-        pool.Enqueue(cube);
+        _pool.Enqueue(cube);
     }
 }

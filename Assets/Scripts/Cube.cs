@@ -2,32 +2,23 @@ using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(Renderer))]
-public class CubeBehaviour : MonoBehaviour
+public class Cube : MonoBehaviour
 {
     [SerializeField] private float _minLifeTime = 2f;
     [SerializeField] private float _maxLifeTime = 5f;
 
-    private CubePool _pool;
     private ColorChanger _colorChanger;
     private Coroutine _lifeTimerCoroutine;
 
-    public event System.Action<GameObject> LifetimeEnded;
-    public event System.Action<GameObject> TouchedPlatform;
+    public event System.Action<Cube> LifetimeEnded;
+    public event System.Action<Cube> TouchedPlatform;
 
     private void Awake()
     {
         _colorChanger = GetComponent<ColorChanger>();
-        if (_colorChanger == null)
-            Debug.LogError("ColorChanger component missing!", this);
     }
 
-    public void Init(CubePool targetPool)
-    {
-        _pool = targetPool;
-        ResetCube();
-    }
-
-    private void ResetCube()
+    public void ResetState()
     {
         if (_colorChanger != null)
             _colorChanger.ResetColor();
@@ -52,7 +43,7 @@ public class CubeBehaviour : MonoBehaviour
         if (_colorChanger != null)
             _colorChanger.ChangeColorOnFirstTouch();
 
-        TouchedPlatform?.Invoke(gameObject);
+        TouchedPlatform?.Invoke(this);
 
         float lifeTime = Random.Range(_minLifeTime, _maxLifeTime);
         _lifeTimerCoroutine = StartCoroutine(LifeTimer(lifeTime));
@@ -61,6 +52,7 @@ public class CubeBehaviour : MonoBehaviour
     private IEnumerator LifeTimer(float duration)
     {
         yield return new WaitForSeconds(duration);
-        LifetimeEnded?.Invoke(gameObject);
+
+        LifetimeEnded?.Invoke(this);
     }
 }

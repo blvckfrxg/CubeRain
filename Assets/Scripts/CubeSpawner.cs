@@ -3,58 +3,54 @@ using UnityEngine;
 
 public class CubeSpawner : MonoBehaviour
 {
-    [SerializeField] private CubePool cubePool;
-    [SerializeField] private float spawnInterval = 1f;
-    [SerializeField] private Vector3 spawnAreaMin;
-    [SerializeField] private Vector3 spawnAreaMax;
+    [SerializeField] private CubePool _cubePool;
+    [SerializeField] private float _spawnInterval = 1f;
+    [SerializeField] private Vector3 _spawnAreaMin;
+    [SerializeField] private Vector3 _spawnAreaMax;
+
+    private WaitForSeconds _waitForSpawn;
 
     private void Start()
     {
+        _waitForSpawn = new WaitForSeconds(_spawnInterval);
+
         StartCoroutine(SpawnRoutine());
     }
 
     private IEnumerator SpawnRoutine()
     {
-        while (true)
+        while (isActiveAndEnabled)
         {
             SpawnCube();
-            yield return new WaitForSeconds(spawnInterval);
+
+            yield return _waitForSpawn;
         }
     }
 
     private void SpawnCube()
     {
         Vector3 spawnPos = new Vector3(
-            Random.Range(spawnAreaMin.x, spawnAreaMax.x),
-            Random.Range(spawnAreaMin.y, spawnAreaMax.y),
-            Random.Range(spawnAreaMin.z, spawnAreaMax.z)
+            Random.Range(_spawnAreaMin.x, _spawnAreaMax.x),
+            Random.Range(_spawnAreaMin.y, _spawnAreaMax.y),
+            Random.Range(_spawnAreaMin.z, _spawnAreaMax.z)
         );
 
-        GameObject cube = cubePool.GetCube();
+        GameObject cube = _cubePool.GetCube();
+
         cube.transform.position = spawnPos;
         cube.transform.rotation = Quaternion.identity;
         cube.SetActive(true);
 
-        CubeBehaviour behaviour = cube.GetComponent<CubeBehaviour>();
-        if (behaviour != null)
+        if (cube.TryGetComponent<Cube>(out var cubeComponent))
         {
-            behaviour.Init(cubePool);
-            behaviour.LifetimeEnded += HandleCubeLifetimeEnd;
-        }
-        else
-        {
-            Debug.LogError("Cube prefab does not have CubeBehaviour component!", cube);
+            cubeComponent.ResetState();
+            cubeComponent.LifetimeEnded += HandleCubeLifetimeEnd;
         }
     }
 
-    private void HandleCubeLifetimeEnd(GameObject cube)
+    private void HandleCubeLifetimeEnd(Cube cube)
     {
-        CubeBehaviour behaviour = cube.GetComponent<CubeBehaviour>();
-        if (behaviour != null)
-        {
-            behaviour.LifetimeEnded -= HandleCubeLifetimeEnd;
-        }
-
-        cubePool.ReturnCube(cube);
+        cube.LifetimeEnded -= HandleCubeLifetimeEnd;
+        _cubePool.ReturnCube(cube.gameObject);
     }
 }

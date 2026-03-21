@@ -12,8 +12,9 @@ GameObject:
   - component: {fileID: 6220891263852531389}
   - component: {fileID: 4253339681161984690}
   - component: {fileID: 6543032772472901473}
-  - component: {fileID: 5825793990759169607}
   - component: {fileID: 2276664445170570581}
+  - component: {fileID: 5825793990759169607}
+  - component: {fileID: -5166609058116214387}
   m_Layer: 0
   m_Name: CubePrefab
   m_TagString: Untagged
@@ -114,19 +115,6 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
   m_Center: {x: 0, y: 0, z: 0}
---- !u!114 &5825793990759169607
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 439653652838739676}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 4ee5f25a9f3702c4e82ff53fa579fc51, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::CubeBehaviour
-  touchedColor: {r: 0.017196152, g: 0.9056604, b: 0, a: 1}
 --- !u!54 &2276664445170570581
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -154,3 +142,30 @@ Rigidbody:
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
+--- !u!114 &5825793990759169607
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 439653652838739676}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4ee5f25a9f3702c4e82ff53fa579fc51, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::CubeBehaviour
+  _minLifeTime: 2
+  _maxLifeTime: 5
+--- !u!114 &-5166609058116214387
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 439653652838739676}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4487b189c247bd045a683a97a9518418, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::ColorChanger
+  _touchedColor: {r: 0, g: 1, b: 0, a: 1}
